@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-echo "Setting up RoboconOS – Full Desktop + Tools + Branding + Unattended Install"
+echo "Setting up RoboCon Oxfordshire OS – Full Desktop + Tools + Branding + Unattended Install"
 echo "Run this on a fresh Manjaro install BEFORE buildiso -g"
 
 # === 1. Update System ===
@@ -33,22 +33,22 @@ sudo mkdir -p /etc/opt/chrome/policies/managed
 
 # === 5. Branding: os-release, logo, wallpaper ===
 sudo tee /etc/os-release > /dev/null << 'EOF'
-NAME="RoboconOS"
-PRETTY_NAME="Robocon OS"
-ID=RoboconOS
+NAME="RoboConOS"
+PRETTY_NAME="RoboCon Oxfordshire OS"
+ID=RoboConOS
 ID_LIKE=manjaro
 VERSION_ID="1.0"
 HOME_URL="https://roboconoxon.org.uk"
-LOGO=RoboconOS-logo
+LOGO=RoboConOS-logo
 EOF
 
 sudo cp /etc/os-release /etc/lsb-release
 
 # Download wallpaper & logo
 sudo wget -qO /usr/share/backgrounds/RoboconOS.jpg \
-    https://raw.githubusercontent.com/JaKooLit/Wallpaper-Bank/refs/heads/main/wallpapers/City-Rain.png
+    https://roboconoxon.org.uk/wp-content/uploads/2025/11/robocon-wallpaper.png
 sudo wget -qO /usr/share/pixmaps/RoboconOS-logo.png \
-    https://roboconoxon.org.uk/wp-content/uploads/2025/06/cropped-Robocon-Natural-Logo-1-32x32.png
+    https://roboconoxon.org.uk/wp-content/uploads/2025/06/cropped-Robocon-Natural-Logo.png
 
 # === 6. Hyprland Config (Floating by Default + Super+T Toggle) ===
 sudo tee /etc/skel/.config/hypr/hyprland.conf > /dev/null << 'EOF'
@@ -176,13 +176,7 @@ EOF
 
 # === 14. Chrome Enterprise Policies ===
 sudo tee /etc/opt/chrome/policies/managed/RoboconOS-policy.json > /dev/null << 'EOF'
-{
-  "HomepageLocation": "https://roboconoxon.org.uk",
-  "HomepageIsNewTabPage": false,
-  "RestoreOnStartupURLs": ["https://roboconoxon.org.uk"],
-  "RestoreOnStartup": 4,
-  "ExtensionInstallForcelist": ["cjpalhdlnbpafiamejdnhcphjbkeiagm"]
-}
+8ed57fc9-f3fe-4613-8292-275c83846665
 EOF
 
 # === 15. Tiling Toggle Script ===
@@ -254,7 +248,7 @@ EOF
 # === 20. UNATTENDED CALAMARES INSTALL ===
 sudo tee /etc/skel/.config/calamares/settings.conf > /dev/null << 'EOF'
 ---
-branding: RoboconOS
+branding: RoboConOS
 modules-search: [ local ]
 
 sequence:
@@ -287,9 +281,9 @@ partition: { disable: true, config: |
 }
 mount: { disable: true }
 users: { disable: true, config: |
-    username: student
-    fullname: Student User
-    password: student123
+    username: roboconoxon
+    fullname: RoboCon Oxfordshire
+    password: roboconoxon
     autologin: true
     sudouser: true
     groups: [ wheel, storage, power, network, video, audio ]
@@ -314,6 +308,6 @@ sudo chmod -R 755 /etc/skel
 echo
 echo "ALL DONE!"
 echo "Now run:"
-echo "  sudo buildiso -p RoboconOS -g"
-echo "  sudo buildiso -p RoboconOS -f -c"
+echo "  sudo buildiso -p RoboConOS -g"
+echo "  sudo buildiso -p RoboConOS -f -c"
 echo "Your ISO will have: Hyprland, Chrome, VS Code, Terminal, File Manager, Tiling Toggle, Spotlight, Branding, UNATTENDED INSTALL"
