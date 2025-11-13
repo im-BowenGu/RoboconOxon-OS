@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-echo "Setting up MyCustomDistro – Full Desktop + Tools + Branding + Unattended Install"
+echo "Setting up RoboconOS – Full Desktop + Tools + Branding + Unattended Install"
 echo "Run this on a fresh Manjaro install BEFORE buildiso -g"
 
 # === 1. Update System ===
@@ -33,22 +33,22 @@ sudo mkdir -p /etc/opt/chrome/policies/managed
 
 # === 5. Branding: os-release, logo, wallpaper ===
 sudo tee /etc/os-release > /dev/null << 'EOF'
-NAME="MyCustomDistro"
-PRETTY_NAME="MyCustomDistro"
-ID=mycustomdistro
+NAME="RoboconOS"
+PRETTY_NAME="Robocon OS"
+ID=RoboconOS
 ID_LIKE=manjaro
 VERSION_ID="1.0"
-HOME_URL="https://mycustomdistro.org"
-LOGO=mycustomdistro-logo
+HOME_URL="https://roboconoxon.org.uk"
+LOGO=RoboconOS-logo
 EOF
 
 sudo cp /etc/os-release /etc/lsb-release
 
 # Download wallpaper & logo
-sudo wget -qO /usr/share/backgrounds/mycustomdistro.jpg \
-    https://images.unsplash.com/photo-1506318137071-a8e063b4ca0a?auto=format&fit=crop&w=1920&q=80
-sudo wget -qO /usr/share/pixmaps/mycustomdistro-logo.png \
-    https://via.placeholder.com/256/88c0d0/2e3440?text=MD
+sudo wget -qO /usr/share/backgrounds/RoboconOS.jpg \
+    https://raw.githubusercontent.com/JaKooLit/Wallpaper-Bank/refs/heads/main/wallpapers/City-Rain.png
+sudo wget -qO /usr/share/pixmaps/RoboconOS-logo.png \
+    https://roboconoxon.org.uk/wp-content/uploads/2025/06/cropped-Robocon-Natural-Logo-1-32x32.png
 
 # === 6. Hyprland Config (Floating by Default + Super+T Toggle) ===
 sudo tee /etc/skel/.config/hypr/hyprland.conf > /dev/null << 'EOF'
@@ -89,8 +89,8 @@ EOF
 
 # === 7. Hyprpaper ===
 sudo tee /etc/skel/.config/hypr/hyprpaper.conf > /dev/null << 'EOF'
-preload = /usr/share/backgrounds/mycustomdistro.jpg
-wallpaper = ,/usr/share/backgrounds/mycustomdistro.jpg
+preload = /usr/share/backgrounds/RoboconOS.jpg
+wallpaper = ,/usr/share/backgrounds/RoboconOS.jpg
 EOF
 
 # === 8. Waybar ===
@@ -164,7 +164,7 @@ eval "$(oh-my-posh init bash --config /usr/share/oh-my-posh/themes/atomic.omp.js
 alias ll='ls -la --color=auto'
 alias ..='cd ..'
 cd ~
-echo -e "\e[1;34mWelcome to MyCustomDistro!\e[0m"
+echo -e "\e[1;34mWelcome to RoboconOS!\e[0m"
 EOF
 
 # === 13. Pamac (AUR + Snap + Flatpak) ===
@@ -175,11 +175,11 @@ enable_flatpak = true
 EOF
 
 # === 14. Chrome Enterprise Policies ===
-sudo tee /etc/opt/chrome/policies/managed/mycustomdistro-policy.json > /dev/null << 'EOF'
+sudo tee /etc/opt/chrome/policies/managed/RoboconOS-policy.json > /dev/null << 'EOF'
 {
-  "HomepageLocation": "https://mycustomdistro.org",
+  "HomepageLocation": "https://roboconoxon.org.uk",
   "HomepageIsNewTabPage": false,
-  "RestoreOnStartupURLs": ["https://mycustomdistro.org"],
+  "RestoreOnStartupURLs": ["https://roboconoxon.org.uk"],
   "RestoreOnStartup": 4,
   "ExtensionInstallForcelist": ["cjpalhdlnbpafiamejdnhcphjbkeiagm"]
 }
@@ -254,7 +254,7 @@ EOF
 # === 20. UNATTENDED CALAMARES INSTALL ===
 sudo tee /etc/skel/.config/calamares/settings.conf > /dev/null << 'EOF'
 ---
-branding: mycustomdistro
+branding: RoboconOS
 modules-search: [ local ]
 
 sequence:
@@ -314,6 +314,6 @@ sudo chmod -R 755 /etc/skel
 echo
 echo "ALL DONE!"
 echo "Now run:"
-echo "  sudo buildiso -p mycustomdistro -g"
-echo "  sudo buildiso -p mycustomdistro -f -c"
+echo "  sudo buildiso -p RoboconOS -g"
+echo "  sudo buildiso -p RoboconOS -f -c"
 echo "Your ISO will have: Hyprland, Chrome, VS Code, Terminal, File Manager, Tiling Toggle, Spotlight, Branding, UNATTENDED INSTALL"
