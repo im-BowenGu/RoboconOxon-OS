@@ -19,13 +19,6 @@ report_error() {
 }
 
 # ——— 1. Install required packages ———
-echo "Installing Hyprland and dependencies..."
-sudo pacman -Syu --noconfirm || report_error "System update failed"
-sudo pacman -S --needed --noconfirm \
-    hyprland hyprpaper waybar wofi thunar polkit-gnome wlogout \
-    papirus-icon-theme nordic-theme qt5-wayland qt6-wayland \
-    xdg-desktop-portal-hyprland libnotify || report_error "Failed to install packages"
-
 # ——— 2. Define target directory ———
 TARGET_DIR="$HOME/.config/hypr"
 echo "Target directory: $TARGET_DIR"
@@ -127,4 +120,90 @@ if [ "$CURRENT" = "dwindle" ]; then
 else
     hyprctl keyword general:layout dwindle
     notify-send 'Tiling Mode' 'Super+T to exit' -i view-grid
-    echo
+    echo "TILE" > /tmp/hypr-tiling-mode
+fi
+pkill -RTMIN+8 waybar
+EOF
+chmod +x "$TARGET_DIR/toggle-tiling.sh" || report_error "Failed to make toggle-tiling.sh executable"
+
+# ——— 6. update-waybar-mode.sh ———
+echo "Writing update-waybar-mode.sh..."
+cat > "$TARGET_DIR/update-waybar-mode.sh" << 'EOF'
+#!/bin/bash
+echo "FLOAT" > /tmp/hypr-tiling-mode
+pkill -RTMIN+8 waybar
+EOF
+chmod +x "$TARGET_DIR/update-waybar-mode.sh" || report_error "Failed to make update-waybar-mode.sh executable"
+
+# ——— 7. Waybar config ———
+echo "Writing Waybar config..."
+mkdir -p "$HOME/.config/waybar"
+cat > "$HOME/.config/waybar/config" << 'EOF'
+{
+  "layer": "top", "height": 36, "spacing": 8,
+  "modules-left": ["custom/launcher", "hyprland/workspaces", "custom/tiling-mode"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "pulseaudio", "network", "battery", "custom/power"],
+  "custom/launcher": { "format": "Search", "on-click": "wofi --show drun", "tooltip": false },
+  "hyprland/workspaces": { "format": "{icon}", "on-click": "activate", "format-icons": ["1","2","3","4","5","6","7","8","9"] },
+  "custom/tiling-mode": { "format": "{}", "exec": "cat /tmp/hypr-tiling-mode 2>/dev/null || echo FLOAT", "interval": 1, "signal": 8 },
+  "clock": { "format": "{:%H:%M  %a %b %d}", "tooltip-format": "{:%Y-%m-%d}" },
+  "tray": { "spacing": 8 },
+  "pulseaudio": { "format": "{icon} {volume}%", "format-muted": "Muted", "on-click": "pavucontrol", "format-icons": ["Low Volume","Medium Volume","High Volume"] },
+  "network": { "format-wifi": "WiFi {essid}", "format-disconnected": "No Network", "on-click": "nm-connection-editor" },
+  "battery": { "bat": "BAT0", "format": "{icon} {capacity}%", "format-icons": ["Low Battery","Medium Battery","High Battery"] },
+  "custom/power": { "format": "Power", "on-click": "wlogout", "tooltip": false }
+}
+EOF
+
+cat > "$HOME/.config/waybar/style.css" << 'EOF'
+* { font-family: "JetBrainsMono Nerd Font", sans-serif; font-size: 14px; color: #d8dee9; }
+window#waybar { background: rgba(46,52,64,0.9); border-bottom: 2px solid #88c0d0; border-radius: 12px; margin: 8px; }
+#workspaces button.active { background: #88c0d0; color: #2e3440; border-radius: 8px; }
+EOF
+
+# ——— 8. Wofi ———
+echo "Writing Wofi config..."
+mkdir -p "$HOME/.config/wofi"
+cat > "$HOME/.config/wofi/config" << 'EOF'
+width=600
+height=400
+show=drun
+prompt=Search
+allow_images=true
+image_size=48
+EOF
+
+cat > "$HOME/.config/wofi/style.css" << 'EOF'
+window { margin: 0px; border: 2px solid #88c0d0; background-color: #2e3440; border-radius: 16px; }
+#input { padding: 12px; background-color: #3b4252; color: white; border-radius: 12px; }
+#entry:selected { background-color: #88c0d0; color: #2e3440; border-radius: 8px; }
+EOF
+
+# ——— 9. Wallpaper ———
+echo "Downloading wallpaper..."
+sudo mkdir -p /usr/share/backgrounds
+sudo wget -qO /usr/share/backgrounds/mycustomdistro.jpg \
+    https://images.unsplash.com/photo-1506318137071-a8e063b4ca0a?auto=format&fit=crop&w=1920&q=80 \
+    || echo "Warning: Wallpaper download failed (continuing)"
+
+# ——— 10. Final check ———
+echo "Verifying key files..."
+for f in hyprland.conf hyprpaper.conf toggle-tiling.sh update-waybar-mode.sh; do
+    [ -f "$TARGET_DIR/$f" ] || report_error "Missing: $TARGET_DIR/$f"
+done
+
+# ——— SUCCESS ———
+echo
+echo "HYPR LAND CONFIG APPLIED SUCCESSFULLY (FIXED)!"
+echo "→ Config location: $TARGET_DIR"
+echo "→ To apply now:"
+echo "   1. Log out and log back in"
+echo "   2. Or run: hyprctl reload (in terminal)"
+echo
+echo "Test:"
+echo "   • Alt + Space → App launcher"
+echo "   • Super + T → Toggle tiling"
+echo "   • Click Search on bar → App grid"
+echo
+echo "If errors persist: Run 'hyprctl --batch "keyword gestures:workspace_swipe true"' to test."
