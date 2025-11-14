@@ -7,13 +7,11 @@ echo "Run this on a fresh Manjaro install BEFORE buildiso -g"
 # === 1. Update System ===
 sudo pacman -Syu --noconfirm
 
-# === 2. Install All Software ===
-sudo pacman -S --needed --noconfirm \
+# === 2. Install Some Software ===
+sudo pacman -S --noconfirm \
     hyprland hyprpaper wofi waybar thunar thunar-archive-plugin file-roller \
-    google-chrome code alacritty oh-my-posh \
-    polkit-gnome systemsettings wlogout calamares \
-    papirus-icon-theme nordic-theme \
-    qt5-wayland qt6-wayland glfw-wayland xdg-desktop-portal-hyprland \
+    code alacritty polkit-gnome systemsettings calamares \
+    papirus-icon-theme qt5-wayland qt6-wayland glfw-wayland xdg-desktop-portal-hyprland \
     git base-devel
 
 # === 3. Install Yay (AUR Helper) ===
@@ -24,12 +22,13 @@ if ! command -v yay &> /dev/null; then
     cd ~
 fi
 
-# === 4. Create /etc/skel Structure ===
+# === 4. Create /etc/skel Structure+Install Other Software ===
 sudo mkdir -p /etc/skel/.config/{hypr,waybar,wofi,alacritty,pamac,calamares}
 sudo mkdir -p /etc/skel/.local/share/applications
 sudo mkdir -p /etc/skel/Desktop
 sudo mkdir -p /usr/share/backgrounds
 sudo mkdir -p /etc/opt/chrome/policies/managed
+yay -S --noconfirm google-chrome oh-my-posh wlogout nordic-theme
 
 # === 5. Branding: os-release, logo, wallpaper ===
 sudo tee /etc/os-release > /dev/null << 'EOF'
@@ -45,7 +44,7 @@ EOF
 sudo cp /etc/os-release /etc/lsb-release
 
 # Download wallpaper & logo
-sudo wget -qO /usr/share/backgrounds/RoboconOS.jpg \
+sudo wget -qO /usr/share/backgrounds/RoboconOS.png \
     https://roboconoxon.org.uk/wp-content/uploads/2025/11/robocon-wallpaper.png
 sudo wget -qO /usr/share/pixmaps/RoboconOS-logo.png \
     https://roboconoxon.org.uk/wp-content/uploads/2025/06/cropped-Robocon-Natural-Logo.png
@@ -89,8 +88,8 @@ EOF
 
 # === 7. Hyprpaper ===
 sudo tee /etc/skel/.config/hypr/hyprpaper.conf > /dev/null << 'EOF'
-preload = /usr/share/backgrounds/RoboconOS.jpg
-wallpaper = ,/usr/share/backgrounds/RoboconOS.jpg
+preload = /usr/share/backgrounds/RoboconOS.png
+wallpaper = ,/usr/share/backgrounds/RoboconOS.png
 EOF
 
 # === 8. Waybar ===

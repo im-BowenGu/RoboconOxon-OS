@@ -1,12 +1,12 @@
 ![RoboCon Oxfordshire Logo](https://roboconoxon.org.uk/wp-content/uploads/2025/06/No-Year-White.png)
 
-# RoboCon Oxfordshire Operating System
+# RoboCon Oxfordshire Operating System Builder
 
 ---
 
 This is a Operating System Configuration Tool designed for RoboCon Oxfordshire.
 
-It contains a setup script enabling automated deployment and unattended installation.
+It contains a setup script enabling automated configuration of a standard system.
 
 ---
 Base OS: Manjaro (Arch Linux)
