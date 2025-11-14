@@ -7,13 +7,11 @@ echo "Run this on a fresh Manjaro install BEFORE buildiso -g"
 # === 1. Update System ===
 sudo pacman -Syu --noconfirm
 
-# === 2. Install All Software ===
-sudo pacman -S --needed --noconfirm \
+# === 2. Install Some Software ===
+sudo pacman -S --noconfirm \
     hyprland hyprpaper wofi waybar thunar thunar-archive-plugin file-roller \
-    google-chrome code alacritty oh-my-posh \
-    polkit-gnome systemsettings wlogout calamares \
-    papirus-icon-theme nordic-theme \
-    qt5-wayland qt6-wayland glfw-wayland xdg-desktop-portal-hyprland \
+    code alacritty polkit-gnome systemsettings calamares \
+    papirus-icon-theme qt5-wayland qt6-wayland glfw-wayland xdg-desktop-portal-hyprland \
     git base-devel
 
 # === 3. Install Yay (AUR Helper) ===
@@ -24,12 +22,13 @@ if ! command -v yay &> /dev/null; then
     cd ~
 fi
 
-# === 4. Create /etc/skel Structure ===
+# === 4. Create /etc/skel Structure+Install Other Software ===
 sudo mkdir -p /etc/skel/.config/{hypr,waybar,wofi,alacritty,pamac,calamares}
 sudo mkdir -p /etc/skel/.local/share/applications
 sudo mkdir -p /etc/skel/Desktop
 sudo mkdir -p /usr/share/backgrounds
 sudo mkdir -p /etc/opt/chrome/policies/managed
+yay -S --noconfirm google-chrome oh-my-posh wlogout nordic-theme
 
 # === 5. Branding: os-release, logo, wallpaper ===
 sudo tee /etc/os-release > /dev/null << 'EOF'
