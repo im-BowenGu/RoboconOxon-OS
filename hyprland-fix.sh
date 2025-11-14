@@ -19,6 +19,13 @@ report_error() {
 }
 
 # ——— 1. Install required packages ———
+echo "Installing Hyprland and dependencies..."
+sudo pacman -Syu --noconfirm || report_error "System update failed"
+sudo pacman -S --needed --noconfirm \
+    hyprland hyprpaper waybar wofi thunar polkit-gnome wlogout \
+    papirus-icon-theme nordic-theme qt5-wayland qt6-wayland \
+    xdg-desktop-portal-hyprland libnotify || report_error "Failed to install packages"
+
 # ——— 2. Define target directory ———
 TARGET_DIR="$HOME/.config/hypr"
 echo "Target directory: $TARGET_DIR"
@@ -28,7 +35,7 @@ mkdir -p "$TARGET_DIR" || report_error "Cannot create $TARGET_DIR"
 echo "Writing hyprland.conf..."
 cat > "$TARGET_DIR/hyprland.conf" << 'EOF'
 # MyCustomDistro Hyprland Config – Floating by Default
-monitor=,preferred,auto,1
+monitor = ,preferred,auto,1
 
 input {
     kb_layout = us
@@ -73,9 +80,7 @@ animations {
     animation = workspaces, 1, 3, ease, slide
 }
 
-gestures {
-    workspace_swipe = true
-}
+gesture = 3, horizontal, workspace
 
 # ——— FLOAT ALL WINDOWS BY DEFAULT ———
 windowrulev2 = float, class:.*
