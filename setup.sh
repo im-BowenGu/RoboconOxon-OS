@@ -45,7 +45,7 @@ EOF
 sudo cp /etc/os-release /etc/lsb-release
 
 # Download wallpaper & logo
-sudo wget -qO /usr/share/backgrounds/RoboconOS.jpg \
+sudo wget -qO /usr/share/backgrounds/RoboconOS.png \
     https://roboconoxon.org.uk/wp-content/uploads/2025/11/robocon-wallpaper.png
 sudo wget -qO /usr/share/pixmaps/RoboconOS-logo.png \
     https://roboconoxon.org.uk/wp-content/uploads/2025/06/cropped-Robocon-Natural-Logo.png
@@ -89,8 +89,8 @@ EOF
 
 # === 7. Hyprpaper ===
 sudo tee /etc/skel/.config/hypr/hyprpaper.conf > /dev/null << 'EOF'
-preload = /usr/share/backgrounds/RoboconOS.jpg
-wallpaper = ,/usr/share/backgrounds/RoboconOS.jpg
+preload = /usr/share/backgrounds/RoboconOS.png
+wallpaper = ,/usr/share/backgrounds/RoboconOS.png
 EOF
 
 # === 8. Waybar ===
