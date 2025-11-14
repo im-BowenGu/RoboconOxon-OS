@@ -2,13 +2,14 @@
 set -e  # Stop on any error — we’ll catch and report it
 
 # =============================================================================
-#  HYPR LAND DIRECT CONFIG APPLICATOR
+#  HYPR LAND DIRECT CONFIG APPLICATOR (FIXED VERSION)
 #  Applies full mouse-first, floating-by-default Hyprland config
 #  No /etc/skel dependency — writes directly to ~/.config/hypr
 #  Reports errors clearly
+#  Updated syntax per Hyprland wiki (v0.44+ as of 2025)
 # =============================================================================
 
-echo "Applying Hyprland configuration directly to ~/.config/hypr..."
+echo "Applying FIXED Hyprland configuration directly to ~/.config/hypr..."
 
 # ——— Helper: Report error and exit ———
 report_error() {
@@ -23,24 +24,26 @@ sudo pacman -Syu --noconfirm || report_error "System update failed"
 sudo pacman -S --needed --noconfirm \
     hyprland hyprpaper waybar wofi thunar polkit-gnome wlogout \
     papirus-icon-theme nordic-theme qt5-wayland qt6-wayland \
-    xdg-desktop-portal-hyprland || report_error "Failed to install packages"
+    xdg-desktop-portal-hyprland libnotify || report_error "Failed to install packages"
 
 # ——— 2. Define target directory ———
 TARGET_DIR="$HOME/.config/hypr"
 echo "Target directory: $TARGET_DIR"
 mkdir -p "$TARGET_DIR" || report_error "Cannot create $TARGET_DIR"
 
-# ——— 3. Write hyprland.conf ———
+# ——— 3. Write hyprland.conf (FIXED SYNTAX) ———
 echo "Writing hyprland.conf..."
 cat > "$TARGET_DIR/hyprland.conf" << 'EOF'
-# RoboCon Oxfordshire OS Hyprland Config – Floating by Default
+# MyCustomDistro Hyprland Config – Floating by Default
 monitor=,preferred,auto,1
 
 input {
     kb_layout = us
     follow_mouse = 1
     sensitivity = 0
-    touchpad { natural_scroll = yes }
+    touchpad {
+        natural_scroll = true
+    }
 }
 
 general {
@@ -54,22 +57,32 @@ general {
 
 decoration {
     rounding = 12
-    blur { enabled = true; size = 8; passes = 2; noise = 0.02; contrast = 0.9 }
-    drop_shadow = yes
-    shadow_range = 12
-    shadow_render_power = 3
-    col.shadow = rgba(000000dd)
+    blur {
+        enabled = true
+        size = 8
+        passes = 2
+        noise = 0.02
+        contrast = 0.9
+    }
+    shadow {
+        enabled = true
+        range = 12
+        render_power = 3
+        color = rgba(000000dd)
+    }
 }
 
 animations {
-    enabled = yes
+    enabled = true
     bezier = ease, 0.4, 0.02, 0.2, 1
     animation = windows, 1, 3, ease, slide
     animation = fade, 1, 3, ease
     animation = workspaces, 1, 3, ease, slide
 }
 
-gestures { workspace_swipe = yes }
+gestures {
+    workspace_swipe = true
+}
 
 # ——— FLOAT ALL WINDOWS BY DEFAULT ———
 windowrulev2 = float, class:.*
@@ -97,8 +110,8 @@ EOF
 # ——— 4. hyprpaper.conf ———
 echo "Writing hyprpaper.conf..."
 cat > "$TARGET_DIR/hyprpaper.conf" << 'EOF'
-preload = /usr/share/backgrounds/RoboCon Oxfordshire OS.jpg
-wallpaper = ,/usr/share/backgrounds/RoboCon Oxfordshire OS.jpg
+preload = /usr/share/backgrounds/mycustomdistro.jpg
+wallpaper = ,/usr/share/backgrounds/mycustomdistro.jpg
 EOF
 
 # ——— 5. toggle-tiling.sh ———
@@ -177,7 +190,7 @@ EOF
 # ——— 9. Wallpaper ———
 echo "Downloading wallpaper..."
 sudo mkdir -p /usr/share/backgrounds
-sudo wget -qO /usr/share/backgrounds/RoboCon Oxfordshire OS.jpg \
+sudo wget -qO /usr/share/backgrounds/mycustomdistro.jpg \
     https://images.unsplash.com/photo-1506318137071-a8e063b4ca0a?auto=format&fit=crop&w=1920&q=80 \
     || echo "Warning: Wallpaper download failed (continuing)"
 
@@ -189,15 +202,15 @@ done
 
 # ——— SUCCESS ———
 echo
-echo "HYPR LAND CONFIG APPLIED SUCCESSFULLY!"
+echo "HYPR LAND CONFIG APPLIED SUCCESSFULLY (FIXED)!"
 echo "→ Config location: $TARGET_DIR"
 echo "→ To apply now:"
 echo "   1. Log out and log back in"
-echo "   2. Or run: Hyprland (if already in session)"
+echo "   2. Or run: hyprctl reload (in terminal)"
 echo
 echo "Test:"
 echo "   • Alt + Space → App launcher"
 echo "   • Super + T → Toggle tiling"
 echo "   • Click Search on bar → App grid"
 echo
-echo "If nothing works: check ~/.config/hypr/hyprland.conf for syntax errors."
+echo "If errors persist: Run 'hyprctl --batch "keyword decoration:shadow:enabled true"' to test."
