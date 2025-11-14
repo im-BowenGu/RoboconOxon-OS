@@ -6,7 +6,7 @@
 
 This is a Operating System Configuration Tool designed for RoboCon Oxfordshire.
 
-It contains a setup script enabling automated deployment and unattended installation.
+It contains a setup script enabling automated configuration of a standard system.
 
 ---
 Base OS: Manjaro (Arch Linux)
