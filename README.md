@@ -9,9 +9,9 @@ This is a Operating System Configuration Tool designed for RoboCon Oxfordshire.
 It contains a setup script enabling automated configuration of a standard system.
 
 ---
-Base OS: Manjaro (Arch Linux)
+Base OS: Debian Sid
 
-Software Installed: Code, Google Chrome (With Chrome Enterprise Cloud Enrollment)
+Software Installed: VSCodium, Brave Browser (With Chrome Enterprise Cloud Enrollment)
 
 ---
 
@@ -22,6 +22,6 @@ Future Features:
 
 ---
 
-Developed in 2025 by Bowen Gu and Don Wong
+Developed in 2025-2026 by Bowen Gu and Don Wong
 
 https://roboconoxon.org.uk
