@@ -1,91 +1,87 @@
 #!/bin/bash
 set -e
 
-echo "Setting up RoboCon Oxfordshire OS"
-# === 1. Setup Debian Sid Repos ===
-sudo tee /etc/apt/sources.list > /dev/null << 'EOF'
-deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware
-EOF
+# --- 1. Repos (Sid + Brave + VSCodium) ---
+echo "deb http://deb.debian.org/debian/ sid main contrib non-free non-free-firmware" > /etc/apt/sources.list
+apt update && apt dist-upgrade -y
 
-sudo apt update && sudo apt dist-upgrade -y
-
-# === 2. Install External Repos (Brave & VSCodium) ===
-sudo apt install -y curl wget gnupg apt-transport-https software-properties-common
+apt install -y curl wget gnupg apt-transport-https software-properties-common
 
 # Brave
-sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" > /etc/apt/sources.list.d/brave-browser-release.list
 
 # VSCodium
-wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | sudo dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
-echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list
+wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
+echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' > /etc/apt/sources.list.d/vscodium.list
 
-sudo apt update
+apt update
 
-# === 3. Install KDE Plasma (Wayland) & Core Apps ===
-sudo apt install -y \
+# --- 2. Install KDE Plasma 6 (Wayland), KRDP & Apps ---
+apt install -y \
     plasma-desktop plasma-workspace-wayland kwin-wayland sddm \
-    plasma-nm plasma-pa \
-    dolphin konsole ark gwenview kcalc \
-    network-manager-gnome \
+    krdp \
+    plasma-nm plasma-pa dolphin konsole ark kcalc \
     codium brave-browser \
-    git build-essential \
-    qemu-guest-agent
+    qemu-guest-agent cloud-init \
+    qt6-style-kvantum
 
-# === 4. Install RDP Server (XRDP) ===
-sudo apt install -y xrdp xorgxrdp
+# --- 3. Configure Auto-Login (Required for Headless RDP) ---
+# Replace 'student' with your actual user if different
+USER_ID=$(id -u 1000)
+USER_NAME=$(id -nu 1000)
 
-# Configure XRDP to launch KDE
-echo "startplasma-x11" > ~/.xsession
-
-sudo sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
-
-sudo systemctl enable xrdp
-sudo systemctl restart xrdp
-
-# === 5. Install "Windows 11" Look for KDE ===
-sudo apt install -y qt5-style-kvantum qt6-style-kvantum
-
-
-sudo tee /usr/local/bin/apply-theme.sh > /dev/null << 'EOF'
-#!/bin/bash
-# Check if theme is already applied to avoid resetting
-if [ -f ~/.config/robocon-theme-applied ]; then
-    exit 0
-fi
-
-# 1. Move Panel to Bottom (KDE Default is bottom, but let's ensure task manager is icon-only)
-
-echo "Theme Setup Complete" > ~/.config/robocon-theme-applied
-EOF
-sudo chmod +x /usr/local/bin/apply-theme.sh
-
-# Add to autostart
-mkdir -p /etc/xdg/autostart
-sudo tee /etc/xdg/autostart/apply-theme.desktop > /dev/null << 'EOF'
-[Desktop Entry]
-Type=Application
-Name=Theme Setup
-Exec=/usr/local/bin/apply-theme.sh
+mkdir -p /etc/sddm.conf.d
+cat <<EOF > /etc/sddm.conf.d/autologin.conf
+[Autologin]
+User=$USER_NAME
+Session=plasma.desktop
 EOF
 
-# === 6. Set Defaults ===
-# Default Editor -> VSCodium
-sudo update-alternatives --set editor /usr/bin/codium
+# Force Wayland Session
+mkdir -p /var/lib/sddm
+cat <<EOF > /var/lib/sddm/state.conf
+[Last]
+Session=/usr/share/wayland-sessions/plasma.desktop
+EOF
 
-# Default Browser -> Brave
+# --- 4. Configure KRDP (RDP Server) ---
+# Inject config to enable RDP on login
+sudo -u $USER_NAME mkdir -p /home/$USER_NAME/.config
+cat <<EOF > /home/$USER_NAME/.config/krdprc
+[General]
+Port=3389
+EOF
+
+# Enable KRDP Server for the user
+loginctl enable-linger $USER_NAME
+systemctl --user -M $USER_NAME@ enable krdp-server
+systemctl --user -M $USER_NAME@ start krdp-server
+
+# Open Firewall
+if command -v ufw > /dev/null; then ufw allow 3389/tcp; fi
+
+# --- 5. Branding & Defaults ---
+# OS Release
+cat <<EOF > /etc/os-release
+NAME="RoboConOS"
+PRETTY_NAME="RoboCon Oxfordshire OS"
+ID=roboconos
+ID_LIKE=debian
+VERSION_ID="3.0"
+HOME_URL="https://roboconoxon.org.uk"
+EOF
+
+# Set Defaults
+update-alternatives --set editor /usr/bin/codium
 xdg-mime default brave-browser.desktop x-scheme-handler/http
 xdg-mime default brave-browser.desktop x-scheme-handler/https
 
-# === 7. Cloud-Init Prep for Proxmox ===
-sudo apt install -y cloud-init
-sudo truncate -s 0 /etc/machine-id
-sudo rm /var/lib/dbus/machine-id
-sudo ln -s /etc/machine-id /var/lib/dbus/machine-id
+# --- 6. Proxmox Prep ---
+truncate -s 0 /etc/machine-id
+rm /var/lib/dbus/machine-id
+ln -s /etc/machine-id /var/lib/dbus/machine-id
+systemctl enable qemu-guest-agent
 
-# === 8. Final Cleanup ===
-sudo apt autoremove -y
-
-echo "Setup Complete!"
-echo "NOTE: KDE Wayland is the default local session."
-echo "RDP sessions will use X11 backend (Standard Linux VDI behavior)."
+apt autoremove -y
+echo "Done. Reboot to initialize Wayland & RDP."
